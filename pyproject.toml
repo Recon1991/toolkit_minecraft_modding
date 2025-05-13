@@ -1,0 +1,19 @@
+[project]
+name = "recon-modding-toolkit"
+version = "0.1.0"
+description = "Recon's Minecraft Modding Toolkit for generating item and data files"
+authors = [{ name = "Recon Halcyon" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    "jinja2",
+    "colorama"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

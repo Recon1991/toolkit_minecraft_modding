@@ -3,20 +3,26 @@ import os
 import argparse
 from colorama import init, Fore
 
-# Ensure src is in the import path
+# Add 'src/' to import path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
 from net.reconhalcyon.toolkit.generators.item_entries import generate_item_entries
 from net.reconhalcyon.toolkit.generators.lang_entries import generate_lang_entries
+from net.reconhalcyon.toolkit.config_loader import load_config_with_defaults
 
 init(autoreset=True)
 
 def run_item_generator(args):
-    if not os.path.exists(args.input):
-        print(Fore.RED + f"[!] Input file not found: {args.input}")
+    config = load_config_with_defaults(args)
+
+    input_path = args.input
+    output_path = args.output or config["default_output_paths"]["item_output"]
+
+    if not os.path.exists(input_path):
+        print(Fore.RED + f"[!] Input file not found: {input_path}")
         sys.exit(1)
 
-    with open(args.input, "r", encoding="utf-8") as f:
+    with open(input_path, "r", encoding="utf-8") as f:
         names = [line.strip() for line in f if line.strip()]
 
     if not names:
@@ -32,14 +38,24 @@ def run_item_generator(args):
         *moditems_lines
     ])
 
-    if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
-            f.write(output)
-        print(Fore.GREEN + f"[✓] Wrote item output to {args.output}")
-    else:
-        print(output)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(output)
+    print(Fore.GREEN + f"[✓] Wrote item output to {output_path}")
 
 def run_lang_generator(args):
+    config = load_config_with_defaults(args)
+
+    # Use merged values from config
+    args.output_file = args.output_file or config["default_output_paths"]["lang_output"]
+    args.csv_output = args.csv_output or config["default_output_paths"]["csv_output"]
+    args.log_dir = args.log_dir or config["default_output_paths"]["log_dir"]
+
+    # Apply dry-run or CSV default if not set explicitly
+    if not hasattr(args, "dry_run") or args.dry_run is None:
+        args.dry_run = config.get("default_dry_run", False)
+    if not hasattr(args, "csv") or args.csv is None:
+        args.csv = config.get("default_csv_export", False)
+
     generate_lang_entries(config_path=args.config, cli_args=args)
 
 def main():
@@ -63,7 +79,7 @@ def main():
     lang_parser.add_argument("--csv-output", help="Path to write CSV export")
     lang_parser.add_argument("--log-dir", help="Directory for log files")
     lang_parser.add_argument("--check-config", action="store_true", help="Validate config and exit")
-    lang_parser.add_argument("--config", default="lang_config.json", help="Path to config JSON file")
+    lang_parser.add_argument("--config", default="toolkit_config.json", help="Path to config JSON file")
     lang_parser.set_defaults(func=run_lang_generator)
 
     args = parser.parse_args()

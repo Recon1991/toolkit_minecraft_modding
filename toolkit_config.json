@@ -4,6 +4,7 @@
   "default_dry_run": true,
   "default_csv_export": false,
   "project_namespace": "hawaiinei",
+  "tachikoma_mood": "default",
   "default_output_paths": {
     "item_output": "generated/fish_entries.java",
     "lang_output": "generated/lang/en_us.json",
